@@ -1,0 +1,50 @@
+{
+    "BBHCF001": {
+        "faculty_id": "BBHCF001",
+        "full_name": "mr. Errol D Almeida",
+        "gender": "Male",
+        "address": "trasi post Angodu",
+        "college_email": "errualmeida2005@bbhegdecollege.com",
+        "personal_email": "errualmeida2005@gmail.com",
+        "whatsapp_number": "+919899999999",
+        "profile_image_url": "",
+        "image_suitability_score": 100,
+        "image_suitability_status": "suitable"
+    },
+    "BBHCF999": {
+        "faculty_id": "BBHCF999",
+        "full_name": "mr. Errol D Almeida",
+        "gender": "Male",
+        "address": "trasi post Angodu",
+        "college_email": "errualmeida2005@bbhegdecollege.com",
+        "personal_email": "errualmeida2005@gmail.com",
+        "whatsapp_number": "+919899999999",
+        "profile_image_url": "",
+        "image_suitability_score": 100,
+        "image_suitability_status": "suitable"
+    },
+    "BBHCF003": {
+        "faculty_id": "BBHCF003",
+        "full_name": "mr. errol",
+        "gender": "Male",
+        "address": "kundapura trasi",
+        "college_email": "v@bbhegdecollege.com",
+        "personal_email": "gmail@gmail.com",
+        "whatsapp_number": "+918967452390",
+        "profile_image_url": "",
+        "image_suitability_score": 100,
+        "image_suitability_status": "suitable"
+    },
+    "BBHCF078": {
+        "faculty_id": "BBHCF078",
+        "full_name": "mr. errol",
+        "gender": "Male",
+        "address": "mangaluru trsi",
+        "college_email": "v@bbhegdecollege.com",
+        "personal_email": "gmail@gmail.com",
+        "whatsapp_number": "+918967452390",
+        "profile_image_url": "",
+        "image_suitability_score": 100,
+        "image_suitability_status": "suitable"
+    }
+}

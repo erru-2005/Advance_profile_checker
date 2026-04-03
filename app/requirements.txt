@@ -1,0 +1,14 @@
+fastapi
+uvicorn
+mediapipe
+opencv-python
+deepface
+insightface
+numpy
+pillow
+python-multipart
+pydantic
+tf-keras-vis
+tf-keras
+onnxruntime
+tensorflow

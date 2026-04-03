@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Faculty Registration | Secure Portal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <!-- Zero-dependency SVG icons used for maximum stability -->
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-hover: #4338ca;
+            --bg-gradient: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            --glass-bg: rgba(255, 255, 255, 0.95);
+            --card-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            --border-color: #cbd5e1;
+            --success: #059669;
+            --error: #dc2626;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg-gradient);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+        }
+
+        .form-container {
+            background: var(--glass-bg);
+            width: 100%;
+            max-width: 680px;
+            border-radius: 28px;
+            box-shadow: var(--card-shadow);
+            padding: 48px;
+            position: relative;
+        }
+
+        .form-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .form-header h1 {
+            font-size: 2.4rem;
+            font-weight: 800;
+            color: #0f172a;
+            letter-spacing: -0.025em;
+        }
+
+        .security-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: #f1f5f9;
+            padding: 6px 16px;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 16px;
+        }
+
+        .form-section {
+            margin-bottom: 32px;
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+            position: relative;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.95rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: #1e293b;
+        }
+
+        .input-wrapper {
+            position: relative;
+            transition: all 0.2s ease;
+        }
+
+        .input-wrapper i, .input-wrapper svg {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            width: 20px;
+            height: 20px;
+            pointer-events: none;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 16px 16px 16px 48px;
+            border-radius: 14px;
+            border: 2px solid var(--border-color);
+            background: white;
+            font-family: inherit;
+            font-size: 1rem;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            color: var(--text-main);
+        }
+
+        textarea {
+            padding-left: 16px;
+            min-height: 110px;
+            resize: none;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.15);
+        }
+
+        .error-message {
+            color: var(--error);
+            font-size: 0.8rem;
+            margin-top: 8px;
+            font-weight: 600;
+            display: none;
+            animation: slideDown 0.2s ease-out;
+        }
+
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Validation States */
+        .valid-state input, .valid-state select, .valid-state textarea {
+            border-color: var(--success) !important;
+            box-shadow: 0 0 0 6px rgba(5, 150, 105, 0.15) !important;
+            background: #f0fdf4;
+        }
+
+        .invalid-state input, .invalid-state select, .invalid-state textarea {
+            border-color: var(--error) !important;
+            box-shadow: 0 0 0 6px rgba(220, 38, 38, 0.2) !important;
+            background: #fef2f2;
+        }
+
+        .invalid-state .error-message {
+            display: block;
+        }
+
+        /* Status Ticks/Crosses */
+        .status-tick, .status-cross {
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: none;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            background: white;
+        }
+        .status-tick { color: var(--success); }
+        .status-cross { color: var(--error); }
+        .valid-state .status-tick { display: flex; }
+        .invalid-state .status-cross { display: flex; }
+
+        /* Profile Image Area */
+        .image-upload-wrapper {
+            border: 3px dashed var(--border-color);
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #f8fafc;
+            position: relative;
+        }
+
+        .image-upload-wrapper:hover {
+            border-color: var(--primary);
+            background: #f1f5f9;
+        }
+
+        .image-upload-wrapper.success {
+            border-color: var(--success);
+            background: #f0fdf4;
+        }
+
+        #imagePreview {
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin: 0 auto 20px;
+            display: none;
+            border: 5px solid white;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .upload-tick-overlay {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: var(--success);
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            z-index: 20;
+        }
+
+        .success .upload-tick-overlay { display: flex; animation: pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        @keyframes pop { from { transform: scale(0); } to { transform: scale(1); } }
+
+        .btn-submit {
+            width: 100%;
+            padding: 18px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 14px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .progress-bar-container {
+            width: 100%;
+            height: 10px;
+            background: #e2e8f0;
+            border-radius: 999px;
+            margin: 20px 0;
+            display: none;
+            overflow: hidden;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .progress-bar {
+            width: 0%;
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary) 0%, #818cf8 100%);
+            transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .btn-submit:hover:not(:disabled) {
+            background: var(--primary-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(79, 70, 229, 0.4);
+        }
+
+        .btn-submit:disabled {
+            background: #cbd5e1;
+            cursor: not-allowed;
+        }
+
+        .status-container {
+            margin-top: 15px;
+            border-radius: 12px;
+            padding: 16px;
+            display: none;
+        }
+
+        #successView {
+            display: none;
+            text-align: center;
+            padding: 40px 0;
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        .salutation-badge {
+            background: #e0e7ff;
+            color: #4338ca;
+            padding: 4px 12px;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            font-weight: 800;
+            margin-left: 10px;
+        }
+
+        .field-error-notice {
+            color: #dc2626;
+            font-size: 0.75rem;
+            font-weight: 700;
+            margin-top: 6px;
+            display: none;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .invalid-state .field-error-notice { display: flex; }
+        
+        .phone-wrapper { display: flex; gap: 12px; }
+        .country-code-input { width: 95px !important; text-align: center; padding-left: 16px !important; font-weight: 700; }
+        .phone-main-input { padding-left: 16px !important; }
+
+        hr { border: 0; border-top: 2px solid #f1f5f9; margin: 40px 0; }
+    </style>
+</head>
+
+<body>
+    <div class="form-container">
+        <div id="registrationView">
+            <div class="form-header">
+                <div class="security-badge">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                    Faculty Registration System
+                </div>
+                <h1>Faculty Enrollment</h1>
+                <p>Register your academic profile in our centralized directory.</p>
+            </div>
+
+            <form id="facultyForm">
+                <div class="form-section">
+                    <!-- Faculty ID -->
+                    <div class="form-group" id="idWrapper">
+                        <label>Faculty Identity ID *</label>
+                        <div class="input-wrapper">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><line x1="7" y1="8" x2="17" y2="8"/><line x1="7" y1="12" x2="17" y2="12"/><line x1="7" y1="16" x2="13" y2="16"/></svg>
+                            <input type="text" id="facultyId" placeholder="e.g. BBHCF101" required>
+                            <div class="status-tick"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 11"></polyline></svg></div>
+                            <div class="status-cross"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></div>
+                        </div>
+                        <div class="error-message">ID must start with BBHCF or BBHCFN followed by 3+ digits.</div>
+                    </div>
+
+                    <!-- Full Name -->
+                    <div class="form-group" id="nameWrapper">
+                        <label>Academic Name <span id="salutationBadge" class="salutation-badge" style="display:none"></span> *</label>
+                        <div class="input-wrapper">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                            <input type="text" id="fullName" placeholder="e.g. Dr. Jane Smith" required>
+                            <div class="status-tick"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 11"></polyline></svg></div>
+                            <div class="status-cross"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></div>
+                        </div>
+                        <div class="error-message">A salutation like Dr., Prof., or Mr./Ms. is mandatory.</div>
+                    </div>
+
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                        <div class="form-group" id="genderWrapper">
+                            <label>Gender *</label>
+                            <div class="input-wrapper">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="left:16px"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                                <select id="gender" required>
+                                    <option value="" disabled selected>Select...</option>
+                                    <option value="Male">Male</option>
+                                    <option value="Female">Female</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                                <div class="status-tick" style="right:35px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 11"></polyline></svg></div>
+                            </div>
+                            <div class="field-error-notice">Please select your gender.</div>
+                        </div>
+                        <div class="form-group" id="emailWrapper">
+                            <label>College Email *</label>
+                            <div class="input-wrapper">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                                <input type="email" id="collegeEmail" placeholder="id@bbhegdecollege.com" required>
+                                <div class="status-tick"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 11"></polyline></svg></div>
+                                <div class="status-cross"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></div>
+                            </div>
+                            <div class="error-message">Only @bbhegdecollege.com accounts are accepted.</div>
+                        </div>
+                    </div>
+
+                    <div class="form-group" id="personalEmailWrapper">
+                        <label>Personal Email Address *</label>
+                        <div class="input-wrapper">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                            <input type="email" id="personalEmail" placeholder="e.g. name@gmail.com" required>
+                            <div class="status-tick"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 11"></polyline></svg></div>
+                        </div>
+                        <div class="field-error-notice">Enter a valid personal email address.</div>
+                    </div>
+
+                    <div class="form-group" id="addressWrapper">
+                        <label>Residential Address *</label>
+                        <textarea id="address" placeholder="Enter your full home address details..." required></textarea>
+                        <div class="field-error-notice">Please enter a complete address (min 10 characters).</div>
+                    </div>
+
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                        <div class="form-group" id="whatsappWrapper">
+                            <label>WhatsApp Number *</label>
+                            <div class="input-wrapper phone-wrapper">
+                                <input type="text" id="countryCode" value="+91" class="country-code-input" maxlength="4">
+                                <input type="tel" id="whatsapp" class="phone-main-input" placeholder="10 Digits" maxlength="10" required>
+                            </div>
+                        </div>
+                        <div class="form-group" id="confirmWrapper">
+                            <label>Confirm Number *</label>
+                            <div class="input-wrapper phone-wrapper" id="confirmInputWrapper">
+                                <input type="text" id="confirmCountryCode" value="+91" class="country-code-input" maxlength="4">
+                                <input type="tel" id="confirmWhatsapp" class="phone-main-input" placeholder="Repeat" maxlength="10" required>
+                                <div class="status-tick"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 11"></polyline></svg></div>
+                                <div class="status-cross"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></div>
+                            </div>
+                            <div class="field-error-notice">WhatsApp numbers must match and be 10 digits.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <hr>
+
+                <!-- Profile Image -->
+                <div class="form-section">
+                    <label>Official Portrait Identification *</label>
+                    <div class="image-upload-wrapper" id="dropZone" onclick="document.getElementById('profileImage').click()">
+                        <div class="upload-tick-overlay" id="imageTick"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
+                        <img id="imagePreview" alt="Profile Preview">
+                        <div id="uploadPrompt">
+                            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin: 0 auto 10px; display: block; color: var(--primary);"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                            <p style="font-weight:700">Upload Professional Photograph</p>
+                            <p style="font-size:0.85rem; color:var(--text-muted)">JPG or PNG (Max 5MB)</p>
+                        </div>
+                    </div>
+                    <input type="file" id="profileImage" accept="image/*" style="display:none">
+                    <div class="progress-bar-container" id="progressContainer"><div class="progress-bar" id="progressBar"></div></div>
+                    <div class="field-error-notice" id="imageErrorNotice">Professional photograph is mandatory and must be verified.</div>
+                    <div id="imageStatus" class="status-container"></div>
+                </div>
+
+                <button type="submit" class="btn-submit" id="submitBtn">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                    Complete Registration
+                </button>
+            </form>
+        </div>
+
+        <div id="successView">
+            <div style="background: #f0fdf4; width: 100px; height: 100px; border-radius: 50%; display:flex; align-items:center; justify-content:center; margin: 0 auto 30px; border: 4px solid #dcfce7;">
+                <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            </div>
+            <h2 id="successHeader" style="font-size: 2.2rem; color: #0f172a; margin-bottom: 12px;">Success!</h2>
+            <p id="successMessage" style="font-size: 1.1rem; color: var(--text-muted); margin-bottom: 40px; line-height: 1.6;">Your profile has been securely registered.</p>
+            <button onclick="window.location.reload()" class="btn-submit" style="max-width: 280px; margin: 0 auto;">Register Another</button>
+        </div>
+    </div>
+
+    <script>
+        const initIcons = () => {
+            if (typeof lucide !== 'undefined') {
+                try { lucide.createIcons(); } catch(e) {}
+            }
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initIcons();
+
+            const form = document.getElementById('facultyForm');
+            const profileInput = document.getElementById('profileImage');
+            const imagePreview = document.getElementById('imagePreview');
+            const uploadPrompt = document.getElementById('uploadPrompt');
+            const progressContainer = document.getElementById('progressContainer');
+            const progressBar = document.getElementById('progressBar');
+            const imageStatus = document.getElementById('imageStatus');
+            const fullNameInput = document.getElementById('fullName');
+            const salutationBadge = document.getElementById('salutationBadge');
+            const submitBtn = document.getElementById('submitBtn');
+            const whatsapp = document.getElementById('whatsapp');
+            const confirmWhatsapp = document.getElementById('confirmWhatsapp');
+            
+            let imageSuitability = { score: 0, status: 'unknown' };
+            let selectedFile = null;
+
+            profileInput.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                selectedFile = file;
+                const reader = new FileReader();
+                reader.onload = (f) => {
+                    imagePreview.src = f.target.result;
+                    imagePreview.style.display = 'block';
+                    uploadPrompt.style.display = 'none';
+                };
+                reader.readAsDataURL(file);
+                triggerImageValidation();
+            });
+
+            function triggerImageValidation() {
+                const facultyId = document.getElementById('facultyId').value.trim();
+                const regex = /^BBHCF[N]?[0-9]{3,}$/;
+                if (!selectedFile || !regex.test(facultyId.toUpperCase())) return;
+                
+                progressContainer.style.display = 'block';
+                const formData = new FormData();
+                formData.append('file', selectedFile);
+                
+                const xhr = new XMLHttpRequest();
+                
+                // Track upload progress
+                xhr.upload.addEventListener('progress', (e) => {
+                    if (e.lengthComputable) {
+                        const percent = Math.round((e.loaded / e.total) * 100);
+                        progressBar.style.width = percent + '%';
+                    }
+                });
+
+                xhr.onreadystatechange = () => {
+                    if (xhr.readyState === 4) {
+                        setTimeout(() => { progressContainer.style.display = 'none'; }, 800);
+                        if (xhr.status === 200) {
+                            const data = JSON.parse(xhr.responseText);
+                            imageStatus.style.display = 'block';
+                            if (data.status === 'suitable') {
+                                imageStatus.style.background = '#f0fdf4';
+                                imageStatus.style.color = '#166534';
+                                imageStatus.innerHTML = `<strong>Perfect Match (${data.score}%)</strong><p>${data.description}</p>`;
+                                imageSuitability = { score: data.score, status: 'suitable' };
+                                document.getElementById('dropZone').classList.add('success');
+                            } else {
+                                imageStatus.style.background = '#fef2f2';
+                                imageStatus.style.color = '#991b1b';
+                                imageStatus.innerHTML = `
+                                    <div style="display:flex; justify-content:space-between; align-items:start">
+                                        <div>
+                                            <strong>Not Suitable (${data.score}%)</strong>
+                                            <p style="font-size:0.8rem; margin:4px 0">${data.description}</p>
+                                        </div>
+                                        <button type="button" onclick="window.reuploadPhoto()" style="background:#dc2626; color:white; border:none; padding:6px 12px; border-radius:6px; font-size:0.75rem; font-weight:700; cursor:pointer; white-space:nowrap; margin-left:10px">Re-upload</button>
+                                    </div>
+                                `;
+                                imageSuitability = { score: data.score, status: 'not_suitable' };
+                                document.getElementById('dropZone').classList.remove('success');
+                            }
+                            checkFormValidity();
+                        }
+                    }
+                };
+                xhr.open('POST', `/validate-profile-image?faculty_id=${facultyId.toUpperCase()}`);
+                xhr.send(formData);
+            }
+
+            window.reuploadPhoto = () => {
+                imageStatus.style.display = 'none';
+                imageStatus.innerHTML = '';
+                imageSuitability = { score: 0, status: 'unknown' };
+                profileInput.click();
+            };
+
+            fullNameInput.addEventListener('input', (e) => {
+                const start = e.target.selectionStart;
+                const end = e.target.selectionEnd;
+                
+                // Title Case conversion: MR. ERROL -> Mr. Errol
+                let words = e.target.value.split(' ');
+                let titleCased = words.map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+                e.target.value = titleCased;
+                
+                // Restore cursor position
+                e.target.setSelectionRange(start, end);
+
+                const val = titleCased.trim();
+                const salutations = ['Dr.', 'Prof.', 'Mr.', 'Ms.', 'Mrs.', 'Shri', 'Smt.'];
+                const found = salutations.find(s => val.toLowerCase().startsWith(s.toLowerCase()));
+                const wrapper = document.getElementById('nameWrapper');
+                
+                if (found && val.length >= found.length + 3) {
+                    salutationBadge.style.display = 'inline-block';
+                    salutationBadge.textContent = "Verified";
+                    wrapper.classList.add('valid-state');
+                    wrapper.classList.remove('invalid-state');
+                } else {
+                    salutationBadge.style.display = 'none';
+                    wrapper.classList.toggle('invalid-state', val.length > 0);
+                    wrapper.classList.remove('valid-state');
+                }
+                checkFormValidity();
+            });
+
+            document.getElementById('facultyId').addEventListener('input', async (e) => {
+                e.target.value = e.target.value.toUpperCase();
+                const fid = e.target.value;
+                const wrapper = document.getElementById('idWrapper');
+                const isValid = /^BBHCF[N]?[0-9]{3,}$/.test(fid);
+                
+                wrapper.classList.toggle('valid-state', isValid);
+                wrapper.classList.toggle('invalid-state', fid.length > 0 && !isValid);
+
+                if (isValid) {
+                    // Try to auto-populate if ID exists
+                    try {
+                        const res = await fetch(`/get-faculty/${fid}`);
+                        if (res.ok) {
+                            const data = await res.json();
+                            console.log("Existing record found, auto-populating...");
+                            
+                            // Map fields with safety checks
+                            if (data.full_name) fullNameInput.value = data.full_name;
+                            if (data.gender) document.getElementById('gender').value = data.gender;
+                            if (data.college_email) document.getElementById('collegeEmail').value = data.college_email;
+                            if (data.personal_email) document.getElementById('personalEmail').value = data.personal_email;
+                            if (data.address) document.getElementById('address').value = data.address;
+                            
+                            if (data.whatsapp_number) {
+                                if (data.whatsapp_number.startsWith('+')) {
+                                    document.getElementById('countryCode').value = data.whatsapp_number.substring(0, 3);
+                                    document.getElementById('confirmCountryCode').value = data.whatsapp_number.substring(0, 3);
+                                    whatsapp.value = data.whatsapp_number.substring(3);
+                                    confirmWhatsapp.value = data.whatsapp_number.substring(3);
+                                } else {
+                                    whatsapp.value = data.whatsapp_number;
+                                    confirmWhatsapp.value = data.whatsapp_number;
+                                }
+                            }
+                            
+                            // Trigger validation to update all visual ticks/shadows
+                            fullNameInput.dispatchEvent(new Event('input'));
+                            checkFormValidity();
+                        }
+                    } catch (err) { console.warn("Search error:", err); }
+
+                    if (selectedFile && imageSuitability.status === 'unknown') triggerImageValidation();
+                }
+                checkFormValidity();
+            });
+
+            ['gender', 'collegeEmail', 'personalEmail', 'whatsapp', 'confirmWhatsapp', 'address'].forEach(id => {
+                document.getElementById(id).addEventListener('input', checkFormValidity);
+            });
+
+            function checkFormValidity() {
+                const idInput = document.getElementById('facultyId');
+                const fullName = document.getElementById('fullName');
+                const collegeEmail = document.getElementById('collegeEmail');
+                const personalEmail = document.getElementById('personalEmail');
+                const gender = document.getElementById('gender');
+                const address = document.getElementById('address');
+                
+                const isIdValid = /^BBHCF[N]?[0-9]{3,}$/.test(idInput.value);
+                const isNameValid = document.getElementById('nameWrapper').classList.contains('valid-state');
+                const isCEmailValid = collegeEmail.value.toLowerCase().endsWith('@bbhegdecollege.com');
+                const isPEmailValid = personalEmail.checkValidity() && personalEmail.value.length > 5;
+                const isWhatsappValid = whatsapp.value.length === 10 && whatsapp.value === confirmWhatsapp.value;
+                const isGenderValid = gender.value !== "";
+                const isAddressValid = address.value.trim().length >= 10;
+                const isImageValid = imageSuitability.status === 'suitable';
+
+                // Real-time Update Visuals
+                document.getElementById('idWrapper').classList.toggle('valid-state', isIdValid);
+                document.getElementById('idWrapper').classList.toggle('invalid-state', idInput.value.length > 0 && !isIdValid);
+                
+                document.getElementById('emailWrapper').classList.toggle('valid-state', isCEmailValid);
+                document.getElementById('emailWrapper').classList.toggle('invalid-state', collegeEmail.value.length > 0 && !isCEmailValid);
+
+                document.getElementById('personalEmailWrapper').classList.toggle('valid-state', isPEmailValid);
+                document.getElementById('personalEmailWrapper').classList.toggle('invalid-state', personalEmail.value.length > 0 && !isPEmailValid);
+
+                document.getElementById('confirmInputWrapper').classList.toggle('valid-state', isWhatsappValid);
+                document.getElementById('confirmInputWrapper').classList.toggle('invalid-state', confirmWhatsapp.value.length > 0 && !isWhatsappValid);
+
+                document.getElementById('genderWrapper').classList.toggle('valid-state', isGenderValid);
+                document.getElementById('addressWrapper').classList.toggle('valid-state', isAddressValid);
+
+                return (isIdValid && isNameValid && isCEmailValid && isPEmailValid && isWhatsappValid && isGenderValid && isAddressValid && isImageValid);
+            }
+
+            form.onsubmit = async (e) => {
+                e.preventDefault();
+                
+                const isValid = checkFormValidity();
+                if (!isValid) {
+                    // Identify the first error and focus it
+                    const idInput = document.getElementById('facultyId');
+                    const collegeEmail = document.getElementById('collegeEmail');
+                    const personalEmail = document.getElementById('personalEmail');
+                    const gender = document.getElementById('gender');
+                    const address = document.getElementById('address');
+
+                    if (!/^BBHCF[N]?[0-9]{3,}$/.test(idInput.value)) { 
+                        document.getElementById('idWrapper').classList.add('invalid-state');
+                        idInput.focus(); return; 
+                    }
+                    if (!document.getElementById('nameWrapper').classList.contains('valid-state')) { 
+                        document.getElementById('nameWrapper').classList.add('invalid-state');
+                        fullNameInput.focus(); return; 
+                    }
+                    if (gender.value === "") { 
+                        document.getElementById('genderWrapper').classList.add('invalid-state');
+                        gender.focus(); return; 
+                    }
+                    if (!collegeEmail.value.toLowerCase().endsWith('@bbhegdecollege.com')) { 
+                        document.getElementById('emailWrapper').classList.add('invalid-state');
+                        collegeEmail.focus(); return; 
+                    }
+                    if (!personalEmail.checkValidity() || personalEmail.value.length < 5) { 
+                        document.getElementById('personalEmailWrapper').classList.add('invalid-state');
+                        personalEmail.focus(); return; 
+                    }
+                    if (address.value.trim().length < 10) { 
+                        document.getElementById('addressWrapper').classList.add('invalid-state');
+                        address.focus(); return; 
+                    }
+                    if (whatsapp.value.length !== 10 || whatsapp.value !== confirmWhatsapp.value) { 
+                        document.getElementById('confirmWrapper').classList.add('invalid-state');
+                        confirmWhatsapp.focus(); return; 
+                    }
+                    if (imageSuitability.status !== 'suitable') {
+                        document.getElementById('imageErrorNotice').style.display = 'flex';
+                        document.getElementById('dropZone').scrollIntoView({ behavior: 'smooth' });
+                        return;
+                    }
+                    return;
+                }
+
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="lucide-refresh-cw loading-spinner"></i> Securely Saving...';
+
+                const facultyData = {
+                    faculty_id: document.getElementById('facultyId').value,
+                    full_name: fullNameInput.value,
+                    gender: document.getElementById('gender').value,
+                    address: document.getElementById('address').value,
+                    college_email: document.getElementById('collegeEmail').value,
+                    personal_email: document.getElementById('personalEmail').value,
+                    whatsapp_number: document.getElementById('countryCode').value + whatsapp.value,
+                    image_suitability_score: imageSuitability.score,
+                    image_suitability_status: imageSuitability.status
+                };
+
+                try {
+                    const response = await fetch('/save-faculty', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(facultyData)
+                    });
+                    if (response.ok) {
+                        document.getElementById('successHeader').textContent = `Thank You, ${fullNameInput.value}!`;
+                        document.getElementById('successMessage').innerHTML = `Your profile <strong>${document.getElementById('facultyId').value}</strong> has been successfully verified and registered in the system index.`;
+                        document.getElementById('registrationView').style.display = 'none';
+                        document.getElementById('successView').style.display = 'block';
+                    } else {
+                        const err = await response.json();
+                        alert("Error saving: " + (err.detail || "Check fields"));
+                    }
+                } catch (err) {
+                    alert("Network Error.");
+                } finally {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = 'Complete Registration';
+                    initIcons();
+                }
+            };
+        });
+    </script>
+</body>
+
+</html>
