@@ -31,3 +31,25 @@ class QualityChecker:
         if width < min_width or height < min_height:
             return False, f"Resolution too low: {width}x{height} (min {min_width}x{min_height})"
         return True, f"Resolution ok: {width}x{height}"
+
+    def detect_text(self, image: np.ndarray) -> tuple[bool, str, float]:
+        """
+        Detect if the image contains too much text or looks like a document/ID card.
+        Uses MSER (Maximally Stable Extremal Regions) to detect letter-like blobs.
+        """
+        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        
+        # MSER for text-like blob detection
+        mser = cv2.MSER_create(min_area=10, max_area=300)
+        regions, _ = mser.detectRegions(gray)
+        
+        # Calculate metric: num_regions per image area
+        height, width = image.shape[:2]
+        density = len(regions) / (width * height) * 1000  # Scaling factor
+        
+        # Normal profile photos usually have < 0.5 density
+        # Documents/cards often have > 1.5 density
+        is_document = density > 1.2
+        
+        msg = f"Document-like patterns detected (Text Density: {density:.2f})" if is_document else f"No excessive text detected ({density:.2f})"
+        return is_document, msg, density

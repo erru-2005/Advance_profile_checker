@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Faculty Registration | Secure Portal</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
     <!-- Zero-dependency SVG icons used for maximum stability -->
     <style>
         :root {
@@ -29,7 +30,11 @@
 
         body {
             font-family: 'Outfit', sans-serif;
-            background: var(--bg-gradient);
+            background: #f1f5f9;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(79, 70, 229, 0.05) 0, transparent 50%), 
+                radial-gradient(at 50% 0%, rgba(139, 92, 246, 0.05) 0, transparent 50%), 
+                radial-gradient(at 100% 0%, rgba(16, 185, 129, 0.05) 0, transparent 50%);
             color: var(--text-main);
             min-height: 100vh;
             display: flex;
@@ -245,8 +250,16 @@
             align-items: center;
             justify-content: center;
             gap: 12px;
-            margin-top: 20px;
+            margin-top: 40px;
+            box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
+
+        .loading-spinner {
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
         .progress-bar-container {
             width: 100%;
@@ -282,16 +295,58 @@
             border-radius: 12px;
             padding: 16px;
             display: none;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
         }
+
+        /* Criteria Checklist Styles */
+        .criteria-list {
+            margin-top: 12px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            border-top: 1px solid rgba(0,0,0,0.05);
+            padding-top: 12px;
+        }
+
+        .criteria-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .criteria-icon {
+            width: 16px;
+            height: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            flex-shrink: 0;
+            animation: pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        .criteria-pass { color: #166534; }
+        .criteria-pass .criteria-icon { background: #dcfce7; color: #166534; }
+        
+        .criteria-fail { color: #991b1b; }
+        .criteria-fail .criteria-icon { background: #fee2e2; color: #991b1b; }
+
+        .criteria-pending { color: #64748b; }
+        .criteria-pending .criteria-icon { background: #f1f5f9; color: #64748b; }
 
         #successView {
             display: none;
             text-align: center;
             padding: 40px 0;
-            animation: fadeIn 0.6s ease-out;
+            animation: fadeIn 0.6s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeIn { 
+            from { opacity: 0; transform: translateY(30px) scale(0.95); } 
+            to { opacity: 1; transform: translateY(0) scale(1); } 
+        }
 
         .salutation-badge {
             background: #e0e7ff;
@@ -301,6 +356,7 @@
             font-size: 0.75rem;
             font-weight: 800;
             margin-left: 10px;
+            box-shadow: 0 2px 4px rgba(79, 70, 229, 0.1);
         }
 
         .field-error-notice {
@@ -311,7 +367,10 @@
             display: none;
             align-items: center;
             gap: 4px;
+            animation: slideIn 0.3s ease-out;
         }
+        
+        @keyframes slideIn { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
         
         .invalid-state .field-error-notice { display: flex; }
         
@@ -497,27 +556,54 @@
                     imagePreview.src = f.target.result;
                     imagePreview.style.display = 'block';
                     uploadPrompt.style.display = 'none';
+                    // Scroll to preview for better UX
+                    imagePreview.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 };
                 reader.readAsDataURL(file);
                 triggerImageValidation();
+                initIcons();
             });
 
             function triggerImageValidation() {
-                const facultyId = document.getElementById('facultyId').value.trim();
-                const regex = /^BBHCF[N]?[0-9]{3,}$/;
-                if (!selectedFile || !regex.test(facultyId.toUpperCase())) return;
+                if (!selectedFile) return;
+                const facultyId = document.getElementById('facultyId').value.trim() || 'TEMP';
                 
                 progressContainer.style.display = 'block';
+                progressBar.style.width = '0%';
+                progressBar.style.background = 'linear-gradient(90deg, var(--primary) 0%, #818cf8 100%)';
                 const formData = new FormData();
                 formData.append('file', selectedFile);
                 
                 const xhr = new XMLHttpRequest();
                 
                 // Track upload progress
+                // Immediately show a "Verifying" state with a loading spinner and pending criteria
+                imageStatus.style.display = 'block';
+                imageStatus.style.background = '#f8fafc';
+                imageStatus.style.color = '#475569';
+                imageStatus.style.border = '1px solid #e2e8f0';
+                imageStatus.innerHTML = `
+                    <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px">
+                        <div class="loading-spinner" style="color:var(--primary); width:20px; height:20px">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"></path></svg>
+                        </div>
+                        <strong style="font-size:1rem">Analyzing Image Profile...</strong>
+                    </div>
+                    <div class="criteria-list">
+                        <div class="criteria-item criteria-pending"><div class="criteria-icon"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle></svg></div><span>Verifying dimensions...</span></div>
+                        <div class="criteria-item criteria-pending"><div class="criteria-icon"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle></svg></div><span>Checking face count...</span></div>
+                        <div class="criteria-item criteria-pending"><div class="criteria-icon"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle></svg></div><span>AI Human check...</span></div>
+                        <div class="criteria-item criteria-pending"><div class="criteria-icon"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle></svg></div><span>Framing analysis...</span></div>
+                    </div>
+                `;
+
                 xhr.upload.addEventListener('progress', (e) => {
                     if (e.lengthComputable) {
                         const percent = Math.round((e.loaded / e.total) * 100);
                         progressBar.style.width = percent + '%';
+                        if (percent === 100) {
+                            progressBar.style.background = 'linear-gradient(90deg, #10b981 0%, #059669 100%)';
+                        }
                     }
                 });
 
@@ -527,29 +613,89 @@
                         if (xhr.status === 200) {
                             const data = JSON.parse(xhr.responseText);
                             imageStatus.style.display = 'block';
+                            
+                            // Generate criteria HTML
+                            let criteriaHtml = '';
+                            if (data.criteria) {
+                                criteriaHtml = '<div class="criteria-list">';
+                                Object.entries(data.criteria).forEach(([key, info]) => {
+                                    const isPass = info.status === 'pass';
+                                    const icon = isPass ? 
+                                        '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>' : 
+                                        '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>';
+                                    
+                                    criteriaHtml += `
+                                        <div class="criteria-item ${isPass ? 'criteria-pass' : 'criteria-fail'}">
+                                            <div class="criteria-icon">${icon}</div>
+                                            <span>${info.label}</span>
+                                        </div>
+                                    `;
+                                });
+                                criteriaHtml += '</div>';
+                            }
+
                             if (data.status === 'suitable') {
                                 imageStatus.style.background = '#f0fdf4';
                                 imageStatus.style.color = '#166534';
-                                imageStatus.innerHTML = `<strong>Perfect Match (${data.score}%)</strong><p>${data.description}</p>`;
+                                imageStatus.style.border = '1px solid #bbf7d0';
+                                imageStatus.innerHTML = `
+                                    <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px">
+                                        <div style="background:#16a34a; color:white; width:24px; height:24px; border-radius:50%; display:flex; align-items:center; justify-content:center">
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                        </div>
+                                        <strong>Excellent Profile Image (${data.score}%)</strong>
+                                    </div>
+                                    <p style="font-size:0.85rem">${data.description}</p>
+                                    ${criteriaHtml}
+                                `;
                                 imageSuitability = { score: data.score, status: 'suitable' };
                                 document.getElementById('dropZone').classList.add('success');
                             } else {
                                 imageStatus.style.background = '#fef2f2';
                                 imageStatus.style.color = '#991b1b';
+                                imageStatus.style.border = '1px solid #fecaca';
                                 imageStatus.innerHTML = `
                                     <div style="display:flex; justify-content:space-between; align-items:start">
                                         <div>
-                                            <strong>Not Suitable (${data.score}%)</strong>
+                                            <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px">
+                                                <div style="background:#dc2626; color:white; width:20px; height:20px; border-radius:50%; display:flex; align-items:center; justify-content:center">
+                                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                                                </div>
+                                                <strong style="font-size:1rem">Not Suitable (${data.score}%)</strong>
+                                            </div>
                                             <p style="font-size:0.8rem; margin:4px 0">${data.description}</p>
                                         </div>
-                                        <button type="button" onclick="window.reuploadPhoto()" style="background:#dc2626; color:white; border:none; padding:6px 12px; border-radius:6px; font-size:0.75rem; font-weight:700; cursor:pointer; white-space:nowrap; margin-left:10px">Re-upload</button>
+                                        <button type="button" onclick="window.reuploadPhoto()" style="background:#dc2626; color:white; border:none; padding:8px 16px; border-radius:10px; font-size:0.85rem; font-weight:700; cursor:pointer; white-space:nowrap; margin-left:10px; box-shadow:0 4px 6px rgba(220,38,36,0.2)">Re-upload</button>
                                     </div>
+                                    ${criteriaHtml}
                                 `;
                                 imageSuitability = { score: data.score, status: 'not_suitable' };
                                 document.getElementById('dropZone').classList.remove('success');
                             }
-                            checkFormValidity();
+                        } else {
+                            // Non-200 Response Handling
+                            imageStatus.style.display = 'block';
+                            imageStatus.style.background = '#fff7ed';
+                            imageStatus.style.color = '#c2410c';
+                            imageStatus.style.border = '1px solid #fed7aa';
+                            let errMsg = "Technical issue during validation.";
+                            try {
+                                const errData = JSON.parse(xhr.responseText);
+                                if (errData.detail) {
+                                    errMsg = Array.isArray(errData.detail) ? errData.detail[0].msg : errData.detail;
+                                }
+                            } catch(e) {}
+                            imageStatus.innerHTML = `
+                                <div style="display:flex; align-items:center; gap:10px; margin-bottom:4px">
+                                    <div style="background:#f97316; color:white; width:20px; height:20px; border-radius:50%; display:flex; align-items:center; justify-content:center">
+                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                                    </div>
+                                    <strong style="font-size:1rem">System Alert (${xhr.status})</strong>
+                                </div>
+                                <p style="font-size:0.85rem">${errMsg}</p>
+                            `;
                         }
+                        checkFormValidity();
                     }
                 };
                 xhr.open('POST', `/validate-profile-image?faculty_id=${facultyId.toUpperCase()}`);

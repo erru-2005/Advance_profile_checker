@@ -1,4 +1,4 @@
-from fastapi import FastAPI, File, UploadFile, HTTPException, Request
+from fastapi import FastAPI, File, UploadFile, HTTPException, Request, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, HTMLResponse
@@ -53,6 +53,7 @@ class ValidationResponse(BaseModel):
     reasons: list[str]
     warnings: list[str]
     description: str
+    criteria: dict | None = None
 
 class FacultyDetails(BaseModel):
     faculty_id: str
@@ -82,7 +83,10 @@ async def well_known(path: str):
     return HTMLResponse(content="", status_code=404)
 
 @app.post("/validate-profile-image", response_model=ValidationResponse)
-async def validate_profile_image(file: UploadFile = File(...), faculty_id: str | None = None):
+async def validate_profile_image(
+    file: UploadFile = File(...), 
+    faculty_id: str | None = Query(None, description="Faculty ID for saving the image")
+):
     """
     Upload an image for professional profile validation.
     Supported formats: jpg, jpeg, png, webp.
@@ -153,7 +157,9 @@ async def validate_profile_image(file: UploadFile = File(...), faculty_id: str |
         return result
 
     except Exception as e:
-        logger.error(f"Error during validation: {str(e)}")
+        import traceback
+        error_msg = f"Error during validation: {str(e)}\n{traceback.format_exc()}"
+        logger.error(error_msg)
         raise HTTPException(status_code=500, detail=f"Internal Server Error: {str(e)}")
 
 @app.get("/get-faculty/{faculty_id}")

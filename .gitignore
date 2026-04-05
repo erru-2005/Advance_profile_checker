@@ -1,0 +1,24 @@
+# Python artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environment
+.venv/
+venv/
+ENV/
+env/
+.env
+
+# Data & IDE
+.vscode/
+.idea/
+*.log
+
+# Personal/Sensitive Data (Faculty Photos)
+app/static/faculty_pictures/*
+app/static/faculty_picture_error/*
+app/faculties.json
+
+# Exclude current AI context folder
+.gemini/
